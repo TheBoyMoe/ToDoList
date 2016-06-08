@@ -18,7 +18,7 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fragment_container);
+        setContentView(R.layout.fragment_container);
 
         // add the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);

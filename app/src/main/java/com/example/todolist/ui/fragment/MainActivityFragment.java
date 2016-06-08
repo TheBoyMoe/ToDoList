@@ -1,18 +1,20 @@
 package com.example.todolist.ui.fragment;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.todolist.R;
+import com.example.todolist.common.ContractFragment;
+import com.example.todolist.common.Utils;
 
-/**
- * A placeholder fragment containing a simple view.
- */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends
+        ContractFragment<MainActivityFragment.Contract> {
 
+    interface Contract {
+        // add methods
+    }
 
     public MainActivityFragment() { }
 
@@ -25,6 +27,10 @@ public class MainActivityFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         return view;
+    }
+
+    public void addTask(){
+        Utils.showToast(getActivity(), "the fragment has spoken");
     }
 
 

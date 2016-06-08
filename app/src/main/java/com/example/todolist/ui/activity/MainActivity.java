@@ -9,15 +9,21 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.example.todolist.R;
-import com.example.todolist.common.Utils;
+import com.example.todolist.ui.fragment.MainActivityFragment;
+
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
+
+    private MainActivityFragment mMainFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.fragment_container);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Timber.i("toolbar: " + toolbar);
         setSupportActionBar(toolbar);
 
         FloatingActionButton addTask = (FloatingActionButton) findViewById(R.id.fab);
@@ -25,11 +31,24 @@ public class MainActivity extends AppCompatActivity {
             addTask.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Utils.showSnackbar(view, "clicked on fab");
+                    // forward any click events to the fragment
+                    mMainFragment.addTask();
                 }
             });
         }
+
+        // cache a reference to the fragment
+        mMainFragment = (MainActivityFragment) getSupportFragmentManager()
+                                                .findFragmentById(R.id.fragment_container);
+        if(mMainFragment == null){
+            mMainFragment = MainActivityFragment.newInstance();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, mMainFragment)
+                    .commit();
+        }
+
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -43,4 +62,5 @@ public class MainActivity extends AppCompatActivity {
         return  (item.getItemId() == R.id.action_settings)
                 || super.onOptionsItemSelected(item);
     }
+
 }
