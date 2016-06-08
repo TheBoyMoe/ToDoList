@@ -9,9 +9,7 @@
                 tools:context=".ui.fragment.MainActivityFragment"
                 tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"/>
+
+
 
 </RelativeLayout>
