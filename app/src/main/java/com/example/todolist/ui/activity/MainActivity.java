@@ -1,14 +1,18 @@
 package com.example.todolist.ui.activity;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.example.todolist.R;
+import com.example.todolist.common.Utils;
 import com.example.todolist.ui.fragment.MainActivityFragment;
 
 import timber.log.Timber;
@@ -32,7 +36,23 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     // forward any click events to the fragment
-                    mMainFragment.addTask();
+                    // mMainFragment.addTask();
+
+                    // launch dialog to allow user to create task
+                    new MaterialDialog.Builder(MainActivity.this)
+                            .title("Define a task you wish to complete")
+                            .inputType(InputType.TYPE_CLASS_TEXT)
+                            .inputRange(2, 20)
+                            .input(null, null, new MaterialDialog.InputCallback() {
+                                @Override
+                                public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                                    // fetch entered text and save
+                                    Utils.showToast(MainActivity.this, input.toString());
+                                }
+                            })
+                            .positiveText("Save")
+                            .negativeText("Cancel")
+                            .show();
                 }
             });
         }
