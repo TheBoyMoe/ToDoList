@@ -17,11 +17,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static volatile DatabaseHelper sDatabaseHelper = null;
     private SQLiteDatabase mDatabase = null;
 
-    private static final String TABLE = "tasks";
-    private static final String TASK_DESCRIPTION = "description";
-    private static final String TASK_POSITION = "position";
-
-    synchronized static DatabaseHelper getInstance(Context context){
+    public synchronized static DatabaseHelper getInstance(Context context){
         if(sDatabaseHelper == null) {
             sDatabaseHelper = new DatabaseHelper(context.getApplicationContext());
         }
@@ -46,13 +42,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         throw new RuntimeException("onUpgrade not setup"); // FIXME
     }
 
-    public void insertTaskItem(Context context, TaskItem item) {
+    public void insertTaskItem(Context context, ContentValues value) {
         Timber.i("%s: inserting item into dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context); // writable dbase instance
-        ContentValues cv = new ContentValues();
-        cv.put(TASK_POSITION, item.getPosition());
-        cv.put(TASK_DESCRIPTION, item.getPosition());
-        db .insert(TABLE, TASK_POSITION, cv);
+//        ContentValues cv = new ContentValues();
+//        cv.put(TASK_POSITION, item.getPosition());
+//        cv.put(TASK_DESCRIPTION, item.getPosition());
+        db .insert(Constants.TABLE, Constants.TASK_POSITION, value);
     }
 
     public Cursor loadTaskItems(Context context) {

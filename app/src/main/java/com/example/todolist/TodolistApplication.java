@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.timber.StethoTree;
+import com.squareup.leakcanary.LeakCanary;
 
 import timber.log.Timber;
 
@@ -34,7 +35,7 @@ public class TodolistApplication extends Application {
         }
 
         // detect memory leaks
-        // LeakCanary.install(this);
+        LeakCanary.install(this);
 
     }
 

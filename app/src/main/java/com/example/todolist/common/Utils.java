@@ -2,6 +2,7 @@ package com.example.todolist.common;
 
 import android.app.Activity;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -16,10 +17,16 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.example.todolist.event.ModelLoadedEvent;
+import com.example.todolist.model.DatabaseHelper;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import de.greenrobot.event.EventBus;
+import timber.log.Timber;
 
 public class Utils {
 
@@ -76,6 +83,15 @@ public class Utils {
         return ThumbnailUtils.createVideoThumbnail(new File(path).getAbsolutePath(), MediaStore.Video.Thumbnails.MINI_KIND);
     }
 
+
+    public static void queryAllItems(Context context) {
+        try {
+            Cursor results = DatabaseHelper.getInstance(context).loadTaskItems(context);
+            EventBus.getDefault().postSticky(new ModelLoadedEvent(results));
+        } catch (Exception e) {
+            Timber.e("%s: error loading items from dbase, %s", Constants.LOG_TAG, e.getMessage());
+        }
+    }
 
 }
 
