@@ -1,28 +1,14 @@
 package com.example.todolist;
 
 import android.app.Application;
-import android.os.Handler;
-import android.os.Looper;
 
-import com.example.todolist.event.BaseEvent;
 import com.facebook.stetho.Stetho;
 import com.facebook.stetho.timber.StethoTree;
-import com.squareup.otto.Bus;
 
 import timber.log.Timber;
 
 public class TodolistApplication extends Application {
 
-    private static TodolistApplication sInstance;
-    private static Bus sBus;
-
-    public static TodolistApplication getInstance() {
-        if(sInstance == null) {
-            sInstance = new TodolistApplication();
-            sBus = new ApplicationBus();
-        }
-        return sInstance;
-    }
 
     @Override
     public void onCreate() {
@@ -52,33 +38,6 @@ public class TodolistApplication extends Application {
 
     }
 
-    public Bus getBus() {
-        return sBus;
-    }
-
-    // post any type of event from anywhere in the app
-    public static void postToBus(BaseEvent event) {
-        getInstance().getBus().post(event);
-    }
-
-    // enable posting of events from either the main or background threads
-    public static class ApplicationBus extends Bus {
-        private final Handler mainThread = new Handler(Looper.getMainLooper());
-
-        @Override
-        public void post(final Object event) {
-            if (Looper.myLooper() == Looper.getMainLooper()) {
-                super.post(event);
-            } else {
-                mainThread.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        post(event);
-                    }
-                });
-            }
-        }
-    }
 
 
 }
