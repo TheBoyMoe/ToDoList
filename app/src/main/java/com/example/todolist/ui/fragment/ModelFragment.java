@@ -59,8 +59,6 @@ public class ModelFragment extends Fragment{
 //    }
 
 
-
-
     // query multiple items
     class LoadItemsThread extends Thread {
 
@@ -94,21 +92,7 @@ public class ModelFragment extends Fragment{
         }
     }
 
-    // delete item
-    class DeleteItemThread extends Thread {
 
-        private int mPosition;
-
-        public DeleteItemThread(int position) {
-            mPosition = position;
-        }
-
-        @Override
-        public void run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            // TODO delete item
-        }
-    }
 
     // update item
     class UpdateItemThread extends Thread {
