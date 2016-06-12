@@ -23,10 +23,9 @@ import com.example.todolist.ui.fragment.ModelFragment;
 
 import timber.log.Timber;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainActivityFragment.Contract {
 
     private static final String MODEL_FRAGMENT = "model_fragment";
-    private Fragment mModelFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +47,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // cache a reference to the model fragment
-        mModelFragment = getSupportFragmentManager().findFragmentByTag(MODEL_FRAGMENT);
-        if (mModelFragment == null) {
-            mModelFragment = ModelFragment.newInstance();
+        Fragment modelFragment = getSupportFragmentManager().findFragmentByTag(MODEL_FRAGMENT);
+        if (modelFragment == null) {
+            modelFragment = ModelFragment.newInstance();
             getSupportFragmentManager().beginTransaction()
-                    .add(mModelFragment, MODEL_FRAGMENT)
+                    .add(modelFragment, MODEL_FRAGMENT)
                     .commit();
         }
 
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     new MaterialDialog.Builder(MainActivity.this)
                             .title("Define a task you wish to complete")
                             .inputType(InputType.TYPE_CLASS_TEXT)
-                            .inputRange(2, 20)
+                            .inputRange(2, 100)
                             .input(null, null, new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
@@ -90,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -102,6 +100,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         return  (item.getItemId() == R.id.action_settings)
                 || super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void deleteTaskItem(long position) {
+        new DeleteItemThread(position).start();
     }
 
 
@@ -126,5 +129,29 @@ public class MainActivity extends AppCompatActivity {
             Utils.queryAllItems(MainActivity.this);
         }
     }
+
+
+    // delete item from database via a bkgd thread
+    class DeleteItemThread extends Thread {
+
+        private long mPosition;
+
+        public DeleteItemThread(long position) {
+            mPosition = position;
+        }
+
+        @Override
+        public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                DatabaseHelper.getInstance(MainActivity.this).deleteTaskItem(MainActivity.this, mPosition);
+            } catch (Exception e) {
+                Timber.e("%s: error deleting item from database, %s", Constants.LOG_TAG, e.getMessage());
+            }
+            // trigger ui update
+            Utils.queryAllItems(MainActivity.this);
+        }
+    }
+
 
 }

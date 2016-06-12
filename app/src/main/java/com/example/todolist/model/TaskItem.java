@@ -3,7 +3,7 @@ package com.example.todolist.model;
 public class TaskItem {
 
     private String mDescription;
-    private int position;
+    private long position;
 
     public String getDescription() {
         return mDescription;
@@ -13,11 +13,11 @@ public class TaskItem {
         mDescription = description;
     }
 
-    public int getPosition() {
+    public long getPosition() {
         return position;
     }
 
-    public void setPosition(int position) {
+    public void setPosition(long position) {
         this.position = position;
     }
 

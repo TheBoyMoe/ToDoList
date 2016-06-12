@@ -1,32 +1,30 @@
 package com.example.todolist.ui.fragment;
 
+import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Process;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
 import com.example.todolist.R;
 import com.example.todolist.common.Constants;
 import com.example.todolist.common.ContractFragment;
-import com.example.todolist.common.Utils;
 import com.example.todolist.event.ModelLoadedEvent;
-import com.example.todolist.model.DatabaseHelper;
 
 import de.greenrobot.event.EventBus;
-import timber.log.Timber;
 
 
 public class MainActivityFragment extends
         ContractFragment<MainActivityFragment.Contract> {
 
-
-    interface Contract {
-        // add methods
+    public interface Contract {
+        void deleteTaskItem(long position);
     }
 
     public MainActivityFragment() { }
@@ -68,13 +66,25 @@ public class MainActivityFragment extends
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         getActivity().getMenuInflater().inflate(R.menu.menu_delete, menu);
-
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo menuInfo =
+               (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        int position = menuInfo.position;
+        ListAdapter adapter = getListAdapter();
+        Cursor cursor = (Cursor) adapter.getItem(position);
+        if(cursor != null && cursor.getCount() >= position) {
+            cursor.moveToPosition(position);
+            long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
+            getContract().deleteTaskItem(id); // forward call to hosting activity
+        }
+
         return super.onContextItemSelected(item);
     }
+
+
 
     @Override
     public void onResume() {
@@ -82,11 +92,13 @@ public class MainActivityFragment extends
         EventBus.getDefault().registerSticky(this);
     }
 
+
     @Override
     public void onPause() {
         EventBus.getDefault().unregister(this);
         super.onPause();
     }
+
 
     public void onEventMainThread(ModelLoadedEvent event) {
         // returns a cursor
@@ -100,30 +112,6 @@ public class MainActivityFragment extends
 //        }
         ((SimpleCursorAdapter)getListAdapter()).changeCursor(event.getModel());
     }
-
-
-    // delete item
-    class DeleteItemThread extends Thread {
-
-        private int mPosition;
-
-        public DeleteItemThread(int position) {
-            mPosition = position;
-        }
-
-        @Override
-        public void run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            try {
-                DatabaseHelper.getInstance(getActivity()).deleteTaskItem(getActivity(), mPosition);
-            } catch (Exception e) {
-                Timber.e("%s: error deleting item from database, %s", Constants.LOG_TAG, e.getMessage());
-            }
-            // trigger ui update
-            Utils.queryAllItems(getActivity());
-        }
-    }
-
 
 
 }

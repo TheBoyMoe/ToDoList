@@ -37,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
                 " position INTEGER);");
     }
 
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         throw new RuntimeException("onUpgrade not setup"); // FIXME
@@ -48,11 +49,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
 //        ContentValues cv = new ContentValues();
 //        cv.put(TASK_POSITION, item.getPosition());
 //        cv.put(TASK_DESCRIPTION, item.getPosition());
-        db .insert(Constants.TABLE, Constants.TASK_POSITION, value);
+        db.insert(Constants.TABLE, Constants.TASK_POSITION, value);
     }
 
     public Cursor loadTaskItems(Context context) {
-        Timber.i("%s: loading items from the dbase", Constants.LOG_TAG);
+        // Timber.i("%s: loading items from the dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context);
         return (db.rawQuery("SELECT * FROM tasks ORDER BY position DESC", null));
     }
@@ -63,11 +64,14 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return (db.rawQuery("SELECT * FROM tasks where position='" + position + "'", null));
     }
 
-    public void deleteTaskItem(Context context, int position) {
-        Timber.i("%s: deleting item from the dbase", Constants.LOG_TAG);
+    public void deleteTaskItem(Context context, long position) {
         SQLiteDatabase db = getDb(context);
-        String deleteQuery = "DELETE FROM tasks where position='" + position + "'";
-        db.execSQL(deleteQuery); // FIXME ?? sql injection risk
+        // String deleteQuery = "DELETE FROM tasks where _ID='" + position + "'";
+        //db.execSQL(deleteQuery); // FIXME ?? sql injection risk
+        //String selection = "_id = ?";
+        String selection = Constants.TASK_POSITION + " = ?";
+        String[] args = {String.valueOf(position)};
+        db.delete(Constants.TABLE, selection, args);
     }
 
     public void updateTaskItem(Context context, TaskItem item){
