@@ -40,7 +40,7 @@ public class MainActivityFragment extends
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         assert view != null;
-        ListView listView = (ListView) view.findViewById(android.R.id.list);
+        final ListView listView =  (ListView) view.findViewById(android.R.id.list);
         // registerForContextMenu(listView); // enable context menu
 
         // enable contextual action bar
@@ -58,9 +58,12 @@ public class MainActivityFragment extends
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_delete:
+
+                        // delete the items from the database
                         ListAdapter adapter = getListAdapter();
                         for (int i = adapter.getCount() - 1; i >= 0; i--) {
-                            if (getListView().isItemChecked(i)) {
+
+                            if (listView.isItemChecked(i)) {
                                 Cursor cursor = (Cursor) adapter.getItem(i);
                                 if(cursor != null && cursor.getCount() >= i) {
                                     cursor.moveToPosition(i);
@@ -69,6 +72,21 @@ public class MainActivityFragment extends
                                 }
                             }
                         }
+
+                        // display a dialog confirming deletion
+//                        new MaterialDialog.Builder(getActivity())
+//                            .title("Are you sure you?")
+//                            .onPositive(new MaterialDialog.SingleButtonCallback(){
+//
+//                                @Override
+//                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+//                                   // do something
+//                                }
+//                            })
+//                            .positiveText("OK")
+//                            .negativeText("Cancel")
+//                            .show();
+
                         mode.finish();
                         return true;
                     default:
