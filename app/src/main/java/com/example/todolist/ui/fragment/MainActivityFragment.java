@@ -2,12 +2,15 @@ package com.example.todolist.ui.fragment;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
+import android.widget.AbsListView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -36,10 +39,61 @@ public class MainActivityFragment extends
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
-        if (view != null) {
-            ListView listView = (ListView) view.findViewById(android.R.id.list);
-            registerForContextMenu(listView);
-        }
+        assert view != null;
+        ListView listView = (ListView) view.findViewById(android.R.id.list);
+        // registerForContextMenu(listView); // enable context menu
+
+        // enable contextual action bar
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.menu_delete, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_delete:
+                        ListAdapter adapter = getListAdapter();
+                        for (int i = adapter.getCount() - 1; i >= 0; i--) {
+                            if (getListView().isItemChecked(i)) {
+                                Cursor cursor = (Cursor) adapter.getItem(i);
+                                if(cursor != null && cursor.getCount() >= i) {
+                                    cursor.moveToPosition(i);
+                                    long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
+                                    getContract().deleteTaskItem(id); // forward call to hosting activity
+                                }
+                            }
+                        }
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // no-op
+                return false;
+            }
+
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                // no-op
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // no-op
+            }
+
+        });
+
         return view;
     }
 
@@ -68,21 +122,21 @@ public class MainActivityFragment extends
         getActivity().getMenuInflater().inflate(R.menu.menu_delete, menu);
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo menuInfo =
-               (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        int position = menuInfo.position;
-        ListAdapter adapter = getListAdapter();
-        Cursor cursor = (Cursor) adapter.getItem(position);
-        if(cursor != null && cursor.getCount() >= position) {
-            cursor.moveToPosition(position);
-            long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
-            getContract().deleteTaskItem(id); // forward call to hosting activity
-        }
-
-        return super.onContextItemSelected(item);
-    }
+//    @Override
+//    public boolean onContextItemSelected(MenuItem item) {
+//        AdapterView.AdapterContextMenuInfo menuInfo =
+//               (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+//        int position = menuInfo.position;
+//        ListAdapter adapter = getListAdapter();
+//        Cursor cursor = (Cursor) adapter.getItem(position);
+//        if(cursor != null && cursor.getCount() >= position) {
+//            cursor.moveToPosition(position);
+//            long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
+//            getContract().deleteTaskItem(id); // forward call to hosting activity
+//        }
+//
+//        return super.onContextItemSelected(item);
+//    }
 
 
 

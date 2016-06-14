@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         @Override
         public void run() {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            Timber.i("%s: delete item task called", Constants.LOG_TAG);
             try {
                 DatabaseHelper.getInstance(MainActivity.this).deleteTaskItem(MainActivity.this, mPosition);
             } catch (Exception e) {
