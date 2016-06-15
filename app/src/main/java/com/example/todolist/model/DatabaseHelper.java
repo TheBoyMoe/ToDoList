@@ -31,10 +31,11 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     @Override
     public void onCreate(SQLiteDatabase db) {
         // create table, defining table & column headings
-        db.execSQL("CREATE TABLE tasks ("+
-                "_id INTEGER PRIMARY KEY," +
-                " description TEXT," +
-                " position INTEGER);");
+        db.execSQL("CREATE TABLE " + Constants.TABLE + "("
+                + "_id INTEGER PRIMARY KEY, "
+                + Constants.TASK_ID + " INTEGER, "
+                + Constants.TASK_DESCRIPTION + " TEXT"
+                +  ");");
     }
 
 
@@ -44,41 +45,49 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void insertTaskItem(Context context, ContentValues value) {
-        Timber.i("%s: inserting item into dbase", Constants.LOG_TAG);
+        // Timber.i("%s: inserting item into dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context); // writable dbase instance
-//        ContentValues cv = new ContentValues();
-//        cv.put(TASK_POSITION, item.getPosition());
-//        cv.put(TASK_DESCRIPTION, item.getPosition());
-        db.insert(Constants.TABLE, Constants.TASK_POSITION, value);
+        db.insert(Constants.TABLE, Constants.TASK_ID, value);
     }
 
     public Cursor loadTaskItems(Context context) {
-        // Timber.i("%s: loading items from the dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context);
-        return (db.rawQuery("SELECT * FROM tasks ORDER BY position DESC", null));
+        return  (db.rawQuery("SELECT * FROM tasks ORDER BY " + Constants.TASK_ID + " DESC", null));
+//        Cursor result = db.query(
+//                Constants.TABLE,
+//                new String[] {"ROWID AS _ID", Constants.TASK_ID, Constants.TASK_DESCRIPTION},
+//                null, null, null, null, Constants.TASK_ID);
+//        result.getCount();
+//
+//        return result;
     }
 
-    public Cursor loadTaskItem(Context context, int position) {
-        Timber.i("%s: loading items from the dbase", Constants.LOG_TAG);
+    public Cursor loadTaskItem(Context context, long taskId) {
         SQLiteDatabase db = getDb(context);
-        return (db.rawQuery("SELECT * FROM tasks where position='" + position + "'", null));
+        return (db.rawQuery("SELECT * FROM tasks where " + Constants.TASK_ID +"='" + taskId + "'", null));
     }
 
-    public void deleteTaskItem(Context context, long position) {
+    public void deleteTaskItem(Context context, long taskId) {
         SQLiteDatabase db = getDb(context);
         // String deleteQuery = "DELETE FROM tasks where _ID='" + position + "'";
         //db.execSQL(deleteQuery); // FIXME ?? sql injection risk
         //String selection = "_id = ?";
-        String selection = Constants.TASK_POSITION + " = ?";
-        String[] args = {String.valueOf(position)};
+        String selection = Constants.TASK_ID + " = ?";
+        String[] args = {String.valueOf(taskId)};
         db.delete(Constants.TABLE, selection, args);
     }
 
-    public void updateTaskItem(Context context, TaskItem item){
+    public void updateTaskItem(Context context, ContentValues values){
         Timber.i("%s: updating item in the dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context);
-        String[] args = {String.valueOf(item.getPosition()), item.getDescription()};
-        db.execSQL("INSERT OR REPLACE INTO tasks (position, description) VALUES (?, ?)", args);
+        // String[] args = {values.getAsString(Constants.TASK_ID), values.getAsString(Constants.TASK_DESCRIPTION)};
+        // db.execSQL("INSERT OR REPLACE INTO tasks (" + Constants.TASK_ID + ", " + Constants.TASK_DESCRIPTION + ") VALUES (?, ?)", args);
+//        String update = "UPDATE " + Constants.TABLE + " SET " +
+//                Constants.TASK_DESCRIPTION + " = " + values.getAsString(Constants.TASK_DESCRIPTION) +
+//                ", WHERE " + Constants.TASK_ID + " = " + values.getAsString(Constants.TASK_ID);
+        // Timber.i("%s: statement %s", Constants.LOG_TAG, str);
+        //db.execSQL(update);
+        db.update(Constants.TABLE, values, Constants.TASK_ID + " = " + values.getAsString(Constants.TASK_ID), null);
     }
 
     private SQLiteDatabase getDb(Context context) {

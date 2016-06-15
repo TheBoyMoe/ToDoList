@@ -1,6 +1,7 @@
 package com.example.todolist.ui.activity;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.annotation.NonNull;
@@ -71,10 +72,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                             .input(null, null, new MaterialDialog.InputCallback() {
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
-                                    // TODO fetch entered text and save to dbase
-                                    // Utils.showToast(MainActivity.this, input.toString());
+                                    // fetch entered text and save to dbase
                                     ContentValues cv = new ContentValues();
-                                    cv.put(Constants.TASK_POSITION, Utils.generateCustomId());
+                                    cv.put(Constants.TASK_ID, Utils.generateCustomId());
                                     cv.put(Constants.TASK_DESCRIPTION, input.toString());
                                     new InsertItemThread(cv).start();
                                 }
@@ -103,8 +103,36 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
-    public void deleteTaskItem(long position) {
-        new DeleteItemThread(position).start();
+    public void deleteTaskItem(long taskId) {
+        new DeleteItemThread(taskId).start();
+    }
+
+    @Override
+    public void updateTaskItem(final long taskId, String description) {
+
+        // load description into a dialog to allow updating
+        new MaterialDialog.Builder(MainActivity.this)
+                .title("Amend the task and save ")
+                .inputType(InputType.TYPE_CLASS_TEXT)
+                .inputRange(2, 100)
+                .input(null, description, new MaterialDialog.InputCallback() {
+                    @Override
+                    public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
+                        // fetch the updated text
+                        ContentValues cv = new ContentValues();
+                        cv.put(Constants.TASK_ID, taskId);
+                        cv.put(Constants.TASK_DESCRIPTION, input.toString());
+
+                        // TODO update item in database
+                        new UpdateItemThread(cv).start();
+                    }
+                })
+                .positiveText("Save")
+                .negativeText("Cancel")
+                .show();
+
+        // save the item back to the database
+
     }
 
 
@@ -130,22 +158,63 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
         }
     }
 
-
     // delete item from database via a bkgd thread
     class DeleteItemThread extends Thread {
 
-        private long mPosition;
+        private long mId;
 
-        public DeleteItemThread(long position) {
-            mPosition = position;
+        public DeleteItemThread(long taskId) {
+            mId = taskId;
         }
 
         @Override
         public void run() {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            Timber.i("%s: delete item task called", Constants.LOG_TAG);
             try {
-                DatabaseHelper.getInstance(MainActivity.this).deleteTaskItem(MainActivity.this, mPosition);
+                DatabaseHelper.getInstance(MainActivity.this).deleteTaskItem(MainActivity.this, mId);
+            } catch (Exception e) {
+                Timber.e("%s: error deleting item from database, %s", Constants.LOG_TAG, e.getMessage());
+            }
+            // trigger ui update
+            Utils.queryAllItems(MainActivity.this);
+        }
+    }
+
+    // fetch item from database
+    class FetchItemThread extends Thread {
+
+        private long mId;
+
+        public FetchItemThread(long taskId) {
+            mId = taskId;
+        }
+
+        @Override
+        public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                Cursor cursor = DatabaseHelper.getInstance(MainActivity.this).loadTaskItem(MainActivity.this, mId);
+
+            } catch (Exception e) {
+                Timber.e("%s: error fetching item from database, %s", Constants.LOG_TAG, e.getMessage());
+            }
+        }
+    }
+
+    // update database item via bkgd thread
+    class UpdateItemThread extends Thread {
+
+        private ContentValues mValues;
+
+        public UpdateItemThread(ContentValues values) {
+            mValues = values;
+        }
+
+        @Override
+        public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                DatabaseHelper.getInstance(MainActivity.this).updateTaskItem(MainActivity.this, mValues);
             } catch (Exception e) {
                 Timber.e("%s: error deleting item from database, %s", Constants.LOG_TAG, e.getMessage());
             }

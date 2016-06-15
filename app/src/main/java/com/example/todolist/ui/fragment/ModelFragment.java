@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.todolist.common.Utils;
-import com.example.todolist.model.TaskItem;
 
 
 /**
@@ -67,46 +66,6 @@ public class ModelFragment extends Fragment{
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             // fetch all items from the database, posting the resulting cursor the the EventBus
             Utils.queryAllItems(mApp);
-        }
-    }
-
-
-
-
-
-
-    // fetch item
-    class LoadItemThread extends Thread {
-
-        private int mPosition;
-
-        public LoadItemThread(int position) {
-            super();
-            mPosition = position;
-        }
-
-        @Override
-        public void run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            // TODO query dbase
-        }
-    }
-
-
-
-    // update item
-    class UpdateItemThread extends Thread {
-
-        private TaskItem mItem;
-
-        public UpdateItemThread(TaskItem item) {
-            mItem = item;
-        }
-
-        @Override
-        public void run() {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-            // TODO update item
         }
     }
 

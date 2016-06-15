@@ -3,7 +3,6 @@ package com.example.todolist.ui.fragment;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ActionMode;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,6 +17,7 @@ import android.widget.SimpleCursorAdapter;
 import com.example.todolist.R;
 import com.example.todolist.common.Constants;
 import com.example.todolist.common.ContractFragment;
+import com.example.todolist.common.Utils;
 import com.example.todolist.event.ModelLoadedEvent;
 
 import de.greenrobot.event.EventBus;
@@ -27,7 +27,8 @@ public class MainActivityFragment extends
         ContractFragment<MainActivityFragment.Contract> {
 
     public interface Contract {
-        void deleteTaskItem(long position);
+        void deleteTaskItem(long taskId);
+        void updateTaskItem(long taskId, String description);
     }
 
     public MainActivityFragment() { }
@@ -38,10 +39,11 @@ public class MainActivityFragment extends
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = super.onCreateView(inflater, container, savedInstanceState);
-        assert view != null;
+        // View view = super.onCreateView(inflater, container, savedInstanceState);
+        //assert view != null;
+        View view = inflater.inflate(R.layout.fragment_main, container, false);
         final ListView listView =  (ListView) view.findViewById(android.R.id.list);
-        // registerForContextMenu(listView); // enable context menu
+        listView.setEmptyView(view.findViewById(android.R.id.empty));
 
         // enable contextual action bar
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -67,7 +69,7 @@ public class MainActivityFragment extends
                                 Cursor cursor = (Cursor) adapter.getItem(i);
                                 if(cursor != null && cursor.getCount() >= i) {
                                     cursor.moveToPosition(i);
-                                    long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
+                                    long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
                                     getContract().deleteTaskItem(id); // forward call to hosting activity
                                 }
                             }
@@ -128,42 +130,33 @@ public class MainActivityFragment extends
         setListAdapter(adapter);
     }
 
+    @Override
+    public void onListItemClick(ListView listView, View view, int position, long id) {
+
+        Utils.showToast(getActivity(), "clicked on item " + position);
+
+        ListAdapter adapter = getListAdapter();
+        Cursor cursor = (Cursor) adapter.getItem(position);
+        if (cursor != null) {
+            cursor.moveToPosition(position);
+            long taskId = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
+            String description = cursor.getString(cursor.getColumnIndex(Constants.TASK_DESCRIPTION));
+
+            // forward the position of the item clicked on to the hosting activity
+            getContract().updateTaskItem(taskId, description);
+        }
+    }
+
     //    public void addTask(){
 //        Utils.showToast(getActivity(), "the fragment has spoken");
 //    }
 
     // get the update to the model via a sticky post
-
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        getActivity().getMenuInflater().inflate(R.menu.menu_delete, menu);
-    }
-
-//    @Override
-//    public boolean onContextItemSelected(MenuItem item) {
-//        AdapterView.AdapterContextMenuInfo menuInfo =
-//               (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-//        int position = menuInfo.position;
-//        ListAdapter adapter = getListAdapter();
-//        Cursor cursor = (Cursor) adapter.getItem(position);
-//        if(cursor != null && cursor.getCount() >= position) {
-//            cursor.moveToPosition(position);
-//            long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_POSITION));
-//            getContract().deleteTaskItem(id); // forward call to hosting activity
-//        }
-//
-//        return super.onContextItemSelected(item);
-//    }
-
-
-
     @Override
     public void onResume() {
         super.onResume();
         EventBus.getDefault().registerSticky(this);
     }
-
 
     @Override
     public void onPause() {
@@ -171,14 +164,14 @@ public class MainActivityFragment extends
         super.onPause();
     }
 
-
+    @SuppressWarnings("unused")
     public void onEventMainThread(ModelLoadedEvent event) {
         // returns a cursor
 //        Cursor cursor = event.getModel();
 //        if (cursor.moveToFirst()) {
 //            do {
-//                Timber.i("%s: id: %s, description: %s",
-//                        Constants.LOG_TAG, cursor.getString(cursor.getColumnIndex(Constants.TASK_POSITION)),
+//                Timber.i("%s: id: %s, description: %s" ,
+//                        Constants.LOG_TAG, cursor.getString(cursor.getColumnIndex(Constants.TASK_ID)),
 //                        cursor.getString(cursor.getColumnIndex(Constants.TASK_DESCRIPTION)));
 //            } while (cursor.moveToNext());
 //        }

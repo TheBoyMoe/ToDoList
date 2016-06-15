@@ -5,11 +5,19 @@
                 tools:context=".ui.fragment.MainActivityFragment"
                 tools:showIn="@layout/activity_main">
 
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </ListView>
+
 
     <TextView
+        android:id="@android:id/empty"
         android:gravity="center"
-        android:text="Hello"
-        android:textSize="28sp"
+        android:text="@string/empty_list_string"
+        android:textSize="24sp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

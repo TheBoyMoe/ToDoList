@@ -39,6 +39,4 @@ public class TodolistApplication extends Application {
 
     }
 
-
-
 }
