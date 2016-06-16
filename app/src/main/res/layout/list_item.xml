@@ -9,6 +9,7 @@
 
 
     <ImageView
+        android:id="@+id/drag_handle"
         android:layout_width="@dimen/xlarge"
         android:layout_height="@dimen/xlarge"
         android:src="@drawable/action_drag_n_drop"
