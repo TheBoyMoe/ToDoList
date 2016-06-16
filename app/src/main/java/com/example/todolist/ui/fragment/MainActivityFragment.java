@@ -124,8 +124,8 @@ public class MainActivityFragment extends
                 new SimpleCursorAdapter(getActivity(),
                         R.layout.list_item,
                         null,
-                        new String[] {Constants.TASK_DESCRIPTION},
-                        new int[] {R.id.description},
+                        new String[] {Constants.TASK_TITLE},
+                        new int[] {R.id.title},
                         0);
         setListAdapter(adapter);
     }
@@ -140,7 +140,7 @@ public class MainActivityFragment extends
         if (cursor != null) {
             cursor.moveToPosition(position);
             long taskId = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
-            String description = cursor.getString(cursor.getColumnIndex(Constants.TASK_DESCRIPTION));
+            String description = cursor.getString(cursor.getColumnIndex(Constants.TASK_TITLE));
 
             // forward the position of the item clicked on to the hosting activity
             getContract().updateTaskItem(taskId, description);

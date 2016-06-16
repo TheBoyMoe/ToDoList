@@ -11,12 +11,14 @@
     <ImageView
         android:layout_width="@dimen/xlarge"
         android:layout_height="@dimen/xlarge"
-        android:src="@drawable/action_add"
+        android:src="@drawable/action_drag_n_drop"
+        android:layout_marginRight="@dimen/large"
+        android:layout_marginEnd="@dimen/large"
         android:contentDescription="@string/image_view"
         android:layout_gravity="center_vertical"/>
 
     <TextView
-        android:id="@+id/description"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="18sp"

@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                                     // fetch entered text and save to dbase
                                     ContentValues cv = new ContentValues();
                                     cv.put(Constants.TASK_ID, Utils.generateCustomId());
-                                    cv.put(Constants.TASK_DESCRIPTION, input.toString());
+                                    cv.put(Constants.TASK_TITLE, input.toString());
                                     new InsertItemThread(cv).start();
                                 }
                             })
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                         // fetch the updated text
                         ContentValues cv = new ContentValues();
                         cv.put(Constants.TASK_ID, taskId);
-                        cv.put(Constants.TASK_DESCRIPTION, input.toString());
+                        cv.put(Constants.TASK_TITLE, input.toString());
 
                         // TODO update item in database
                         new UpdateItemThread(cv).start();
