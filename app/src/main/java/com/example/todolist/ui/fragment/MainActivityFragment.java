@@ -1,5 +1,6 @@
 package com.example.todolist.ui.fragment;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ActionMode;
@@ -10,21 +11,24 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.ListAdapter;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 
 import com.example.todolist.R;
 import com.example.todolist.common.Constants;
 import com.example.todolist.common.ContractFragment;
-import com.example.todolist.common.Utils;
 import com.example.todolist.event.ModelLoadedEvent;
+import com.mobeta.android.dslv.DragSortListView;
+import com.mobeta.android.dslv.SimpleDragSortCursorAdapter;
 
 import de.greenrobot.event.EventBus;
 
 
 public class MainActivityFragment extends
         ContractFragment<MainActivityFragment.Contract> {
+
+    private DragSortListView mListView                                                                  ;
+    private CustomAdapter mAdapter;
 
     public interface Contract {
         void deleteTaskItem(long taskId);
@@ -39,15 +43,24 @@ public class MainActivityFragment extends
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // View view = super.onCreateView(inflater, container, savedInstanceState);
-        //assert view != null;
+
         View view = inflater.inflate(R.layout.fragment_main, container, false);
-        final ListView listView =  (ListView) view.findViewById(android.R.id.list);
-        listView.setEmptyView(view.findViewById(android.R.id.empty));
+        mListView =  (DragSortListView)view.findViewById(android.R.id.list);
+        mListView.setEmptyView(view.findViewById(android.R.id.empty));
+
+        // instantiate and bind the adapter
+        mAdapter = new CustomAdapter(getActivity(),
+                R.layout.list_item,                 // list item layout
+                null,                               // cursor
+                new String[]{Constants.TASK_TITLE}, // columns
+                new int[]{R.id.title},              // views to bind the data to
+                0);
+
+        mListView.setAdapter(mAdapter);
 
         // enable contextual action bar
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        listView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -62,11 +75,11 @@ public class MainActivityFragment extends
                     case R.id.action_delete:
 
                         // delete the items from the database
-                        ListAdapter adapter = getListAdapter();
-                        for (int i = adapter.getCount() - 1; i >= 0; i--) {
+                        //ListAdapter adapter = getListAdapter();
+                        for (int i = mAdapter.getCount() - 1; i >= 0; i--) {
 
-                            if (listView.isItemChecked(i)) {
-                                Cursor cursor = (Cursor) adapter.getItem(i);
+                            if (mListView.isItemChecked(i)) {
+                                Cursor cursor = (Cursor) mAdapter.getItem(i);
                                 if(cursor != null && cursor.getCount() >= i) {
                                     cursor.moveToPosition(i);
                                     long id = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
@@ -74,20 +87,6 @@ public class MainActivityFragment extends
                                 }
                             }
                         }
-
-                        // display a dialog confirming deletion
-//                        new MaterialDialog.Builder(getActivity())
-//                            .title("Are you sure you?")
-//                            .onPositive(new MaterialDialog.SingleButtonCallback(){
-//
-//                                @Override
-//                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-//                                   // do something
-//                                }
-//                            })
-//                            .positiveText("OK")
-//                            .negativeText("Cancel")
-//                            .show();
 
                         mode.finish();
                         return true;
@@ -114,42 +113,37 @@ public class MainActivityFragment extends
 
         });
 
+        // configure list item drag
+        mListView.setDragScrollProfile(new DragSortListView.DragScrollProfile() {
+            @Override
+            public float getSpeed(float w, long t) {
+                if (w > 0.8f) {
+                    // Traverse all views in a millisecond
+                    return ((float) mAdapter.getCount()) / 0.001f;
+                } else {
+                    return 10.0f * w;
+                }
+            }
+        });
+
+        // launch dialog to allow list item edit on item click
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
+                // Utils.showToast(getActivity(), "clicked on item " + position);
+                Cursor cursor = (Cursor) listView.getItemAtPosition(position);
+                if(cursor != null){
+                    String title = cursor.getString(cursor.getColumnIndex(Constants.TASK_TITLE));
+                    long taskId = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
+                    // forward the position of the item clicked on to the hosting activity
+                    getContract().updateTaskItem(taskId, title);
+                }
+            }
+        });
+
         return view;
     }
 
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        SimpleCursorAdapter adapter =
-                new SimpleCursorAdapter(getActivity(),
-                        R.layout.list_item,
-                        null,
-                        new String[] {Constants.TASK_TITLE},
-                        new int[] {R.id.title},
-                        0);
-        setListAdapter(adapter);
-    }
-
-    @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
-
-        Utils.showToast(getActivity(), "clicked on item " + position);
-
-        ListAdapter adapter = getListAdapter();
-        Cursor cursor = (Cursor) adapter.getItem(position);
-        if (cursor != null) {
-            cursor.moveToPosition(position);
-            long taskId = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
-            String description = cursor.getString(cursor.getColumnIndex(Constants.TASK_TITLE));
-
-            // forward the position of the item clicked on to the hosting activity
-            getContract().updateTaskItem(taskId, description);
-        }
-    }
-
-    //    public void addTask(){
-//        Utils.showToast(getActivity(), "the fragment has spoken");
-//    }
 
     // get the update to the model via a sticky post
     @Override
@@ -166,17 +160,49 @@ public class MainActivityFragment extends
 
     @SuppressWarnings("unused")
     public void onEventMainThread(ModelLoadedEvent event) {
-        // returns a cursor
+
 //        Cursor cursor = event.getModel();
 //        if (cursor.moveToFirst()) {
 //            do {
 //                Timber.i("%s: id: %s, description: %s" ,
 //                        Constants.LOG_TAG, cursor.getString(cursor.getColumnIndex(Constants.TASK_ID)),
-//                        cursor.getString(cursor.getColumnIndex(Constants.TASK_DESCRIPTION)));
+//                        cursor.getString(cursor.getColumnIndex(Constants.TASK_TITLE)));
 //            } while (cursor.moveToNext());
 //        }
-        ((SimpleCursorAdapter)getListAdapter()).changeCursor(event.getModel());
+
+        // pass the retrieved cursor to the adapter
+        mAdapter.changeCursor(event.getModel());
     }
+
+
+    private class CustomAdapter extends SimpleDragSortCursorAdapter {
+
+        public CustomAdapter(Context context, int layout, Cursor c, String[] from, int[] to, int flags) {
+            super(context, layout, c, from, to, flags);
+            mContext = context;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            return super.getView(position, convertView, parent);
+        }
+
+        public void persistChanges() {
+            Cursor cursor = getCursor();
+            cursor.moveToFirst();
+            while (cursor.moveToNext()) {
+                int itemPosition = getListPosition(cursor.getPosition());
+                if (itemPosition == REMOVED) {
+                    // TODO delete item from the database
+
+                } else if (itemPosition != cursor.getPosition()) {
+                    // TODO update item in the database
+
+                }
+            }
+        }
+    }
+
 
 
 }

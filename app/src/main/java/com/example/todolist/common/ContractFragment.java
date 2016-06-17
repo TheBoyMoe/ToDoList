@@ -2,9 +2,9 @@ package com.example.todolist.common;
 
 import android.app.Activity;
 import android.content.Context;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 
-public class ContractFragment<T> extends ListFragment{
+public class ContractFragment<T> extends Fragment {
 
     private T mContract;
 
