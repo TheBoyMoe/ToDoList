@@ -9,8 +9,6 @@ import android.database.sqlite.SQLiteStatement;
 
 import com.example.todolist.common.Constants;
 
-import timber.log.Timber;
-
 public class DatabaseHelper extends SQLiteOpenHelper{
 
     private static final String DATABASE_NAME = "tasks_database.db";
@@ -48,20 +46,29 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void insertTaskItem(Context context, long taskId, String title) {
+
+        // determine the item's position
+        SQLiteDatabase db = getDb(context); // writable dbase instance
+//        Cursor cursor = db.rawQuery("SELECT * FROM tasks", null);
+//        long itemPosition = cursor.getCount();
+//        cursor.close();
+
         int itemPosition = getMaxColumnData(context); // FIXME always 0
-        Timber.i("%s item position %d", Constants.LOG_TAG, itemPosition);
+
+        // Timber.i("%s item position %d", Constants.LOG_TAG, itemPosition);
         ContentValues cv = new ContentValues();
         cv.put(Constants.TASK_ID, taskId);
         cv.put(Constants.TASK_TITLE, title);
-        cv.put(Constants.TASK_POSITION, itemPosition);
+        cv.put(Constants.TASK_POSITION, itemPosition + 1);
 
-        SQLiteDatabase db = getDb(context); // writable dbase instance
         db.insert(Constants.TABLE, Constants.TASK_ID, cv);
     }
 
     public Cursor loadTaskItems(Context context) {
         SQLiteDatabase db = getDb(context);
-        return  (db.rawQuery("SELECT * FROM tasks ORDER BY " + Constants.TASK_ID + " DESC", null));
+        // return  (db.rawQuery("SELECT * FROM tasks ORDER BY " + Constants.TASK_ID + " DESC", null));
+        return  (db.rawQuery("SELECT * FROM tasks ORDER BY " + Constants.TASK_POSITION + " ASC", null));
+
 //        Cursor result = db.query(
 //                Constants.TABLE,
 //                new String[] {"ROWID AS _ID", Constants.TASK_ID, Constants.TASK_DESCRIPTION},
@@ -87,7 +94,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     }
 
     public void updateTaskItem(Context context, ContentValues values){
-        Timber.i("%s: updating item in the dbase", Constants.LOG_TAG);
+        // Timber.i("%s: updating item in the dbase", Constants.LOG_TAG);
         SQLiteDatabase db = getDb(context);
         // String[] args = {values.getAsString(Constants.TASK_ID), values.getAsString(Constants.TASK_DESCRIPTION)};
         // db.execSQL("INSERT OR REPLACE INTO tasks (" + Constants.TASK_ID + ", " + Constants.TASK_DESCRIPTION + ") VALUES (?, ?)", args);
@@ -97,6 +104,13 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         // Timber.i("%s: statement %s", Constants.LOG_TAG, str);
         //db.execSQL(update);
         db.update(Constants.TABLE, values, Constants.TASK_ID + " = " + values.getAsString(Constants.TASK_ID), null);
+    }
+
+    public void updateTaskItemPosition(Context context, long taskId, int itemPosition) {
+        SQLiteDatabase db = getDb(context);
+        ContentValues values = new ContentValues();
+        values.put(Constants.TASK_POSITION, itemPosition);
+        db.update(Constants.TABLE, values, Constants.TASK_ID + " = " + String.valueOf(taskId), null);
     }
 
     private SQLiteDatabase getDb(Context context) {

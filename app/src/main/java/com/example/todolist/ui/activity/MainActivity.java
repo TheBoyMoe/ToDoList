@@ -134,6 +134,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     }
 
+    @Override
+    public void updateTaskItemPosition(long taskId, int itemPosition) {
+        new UpdateItemPositionThread(taskId, itemPosition).start();
+    }
+
 
     // insert item into database via a bkgd thread
     class InsertItemThread extends Thread {
@@ -218,12 +223,34 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
             try {
                 DatabaseHelper.getInstance(MainActivity.this).updateTaskItem(MainActivity.this, mValues);
             } catch (Exception e) {
-                Timber.e("%s: error deleting item from database, %s", Constants.LOG_TAG, e.getMessage());
+                Timber.e("%s: error deleting item from the database, %s", Constants.LOG_TAG, e.getMessage());
             }
             // trigger ui update
             Utils.queryAllItems(MainActivity.this);
         }
     }
 
+
+    class UpdateItemPositionThread extends Thread {
+        private long mTaskId;
+        private int mPosition;
+
+        public UpdateItemPositionThread(long taskId, int itemPosition) {
+            mTaskId = taskId;
+            mPosition = itemPosition;
+        }
+
+        @Override
+        public void run() {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
+            try {
+                DatabaseHelper.getInstance(MainActivity.this).updateTaskItemPosition(MainActivity.this, mTaskId, mPosition);
+            }catch (Exception e) {
+                Timber.e("%s: error updating item position, %s", Constants.LOG_TAG, e.getMessage());
+            }
+            // trigger ui update
+            Utils.queryAllItems(MainActivity.this);
+        }
+    }
 
 }

@@ -33,6 +33,7 @@ public class MainActivityFragment extends
     public interface Contract {
         void deleteTaskItem(long taskId);
         void updateTaskItem(long taskId, String description);
+        void updateTaskItemPosition(long taskId, int itemPosition);
     }
 
     public MainActivityFragment() { }
@@ -212,18 +213,19 @@ public class MainActivityFragment extends
             cursor.moveToFirst();
             while (cursor.moveToNext()) {
                 int itemPosition = getListPosition(cursor.getPosition());
+                long taskID = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
                 // Timber.i("%s: item position %d", Constants.LOG_TAG, itemPosition);
                 if (itemPosition == REMOVED) {
-                    long taskID = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
                     // delete item from the database - forward the call to the hosting activity
                     getContract().deleteTaskItem(taskID);
 
                 } else if (itemPosition != cursor.getPosition()) {
-                    // TODO update item in the database
-
+                    // update item in the database
+                    getContract().updateTaskItemPosition(taskID, itemPosition);
                 }
             }
         }
+
     }
 
 
