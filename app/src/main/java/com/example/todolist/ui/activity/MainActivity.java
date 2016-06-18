@@ -73,10 +73,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                                 @Override
                                 public void onInput(@NonNull MaterialDialog dialog, CharSequence input) {
                                     // fetch entered text and save to dbase
-                                    ContentValues cv = new ContentValues();
-                                    cv.put(Constants.TASK_ID, Utils.generateCustomId());
-                                    cv.put(Constants.TASK_TITLE, input.toString());
-                                    new InsertItemThread(cv).start();
+                                    long taskId = Utils.generateCustomId();
+                                    String title = input.toString();
+                                    new InsertItemThread(taskId, title).start();
                                 }
                             })
                             .positiveText("Save")
@@ -138,18 +137,21 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     // insert item into database via a bkgd thread
     class InsertItemThread extends Thread {
-        private ContentValues mValue;
+        private long mTaskId;
+        private String mTitle;
 
-        public InsertItemThread(ContentValues value) {
+        public InsertItemThread(long taskId, String title) {
             super();
-            mValue = value;
+            mTaskId = taskId;
+            mTitle = title;
         }
 
         @Override
         public void run() {
             Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
             try {
-                DatabaseHelper.getInstance(MainActivity.this).insertTaskItem(MainActivity.this, mValue);
+                DatabaseHelper.getInstance(MainActivity.this).
+                        insertTaskItem(MainActivity.this, mTaskId, mTitle);
             } catch (Exception e) {
                 Timber.e("%s: error adding item to dbase, %s", Constants.LOG_TAG, e.getMessage());
             }

@@ -3,6 +3,7 @@ package com.example.todolist.ui.fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,7 +24,6 @@ import com.mobeta.android.dslv.SimpleDragSortCursorAdapter;
 
 import de.greenrobot.event.EventBus;
 
-
 public class MainActivityFragment extends
         ContractFragment<MainActivityFragment.Contract> {
 
@@ -39,6 +39,12 @@ public class MainActivityFragment extends
 
     public static MainActivityFragment newInstance(){
         return new MainActivityFragment();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
     }
 
     @Override
@@ -126,6 +132,7 @@ public class MainActivityFragment extends
             }
         });
 
+
         // launch dialog to allow list item edit on item click
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -144,6 +151,19 @@ public class MainActivityFragment extends
         return view;
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_persist, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == R.id.action_persist) {
+            mAdapter.persistChanges();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     // get the update to the model via a sticky post
     @Override
@@ -192,8 +212,11 @@ public class MainActivityFragment extends
             cursor.moveToFirst();
             while (cursor.moveToNext()) {
                 int itemPosition = getListPosition(cursor.getPosition());
+                // Timber.i("%s: item position %d", Constants.LOG_TAG, itemPosition);
                 if (itemPosition == REMOVED) {
-                    // TODO delete item from the database
+                    long taskID = cursor.getLong(cursor.getColumnIndex(Constants.TASK_ID));
+                    // delete item from the database - forward the call to the hosting activity
+                    getContract().deleteTaskItem(taskID);
 
                 } else if (itemPosition != cursor.getPosition()) {
                     // TODO update item in the database

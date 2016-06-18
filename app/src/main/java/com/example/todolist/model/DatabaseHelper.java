@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 
 import com.example.todolist.common.Constants;
 
@@ -46,10 +47,16 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         throw new RuntimeException("onUpgrade not setup"); // FIXME
     }
 
-    public void insertTaskItem(Context context, ContentValues value) {
-        // Timber.i("%s: inserting item into dbase", Constants.LOG_TAG);
+    public void insertTaskItem(Context context, long taskId, String title) {
+        int itemPosition = getMaxColumnData(context); // FIXME always 0
+        Timber.i("%s item position %d", Constants.LOG_TAG, itemPosition);
+        ContentValues cv = new ContentValues();
+        cv.put(Constants.TASK_ID, taskId);
+        cv.put(Constants.TASK_TITLE, title);
+        cv.put(Constants.TASK_POSITION, itemPosition);
+
         SQLiteDatabase db = getDb(context); // writable dbase instance
-        db.insert(Constants.TABLE, Constants.TASK_ID, value);
+        db.insert(Constants.TABLE, Constants.TASK_ID, cv);
     }
 
     public Cursor loadTaskItems(Context context) {
@@ -99,6 +106,12 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         return mDatabase;
     }
 
+    private int getMaxColumnData(Context context) {
+        SQLiteDatabase db = getDb(context);
+        final SQLiteStatement statement =
+                db.compileStatement("SELECT MAX(" + Constants.TASK_POSITION + ") FROM " + Constants.TABLE);
 
+        return (int) statement.simpleQueryForLong();
+    }
 
 }
