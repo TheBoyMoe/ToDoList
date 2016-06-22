@@ -1,7 +1,11 @@
 ToDoList Demo App
 =================
 
-Android app which allows users to set and follow the tasks that they've set
+Android 'to do list' app. Add items through the FAB button. Clicking on items allows you to edit them,
+ while long clicks enables multi-choice selection - giving you the option to delete items.
+The order of items can be changed, click the 'plus' icon in the toolbar to save the changes.
+
+Uses the 
 
 Pre-requisites
 --------------
@@ -14,13 +18,6 @@ Getting Started
 This sample uses the Gradle build system. To build this project, use the
 "gradlew build" command or use "Import Project" in Android Studio.
 
-
-Screenshots
------------
-
-![Phone](screenshots/phone_preview.gif "Interacting with the app on a phone")
-
-![Tablet](screenshots/tablet_preview.gif "Interacting with the app on a tablet")
 
 
 MIT License
