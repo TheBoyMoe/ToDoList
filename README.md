@@ -5,7 +5,8 @@ Android 'to do list' app. Add items through the FAB button. Clicking on items al
  while long clicks enables multi-choice selection - giving you the option to delete items.
 The order of items can be changed, click the 'plus' icon in the toolbar to save the changes.
 
-Uses the 
+The app uses the [DragSortListView] (https://github.com/bauerca/drag-sort-listview) created by Carl A.Bauer
+and tips on saving changes to list item order from Jason McReynolds [dlsv-db-demo] (https://github.com/jmmcreynolds)
 
 Pre-requisites
 --------------
